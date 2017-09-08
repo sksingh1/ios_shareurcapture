@@ -9,6 +9,10 @@
 #import "PriviewController.h"
 #import "Entity+CoreDataProperties.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
+#import <MobileCoreServices/MobileCoreServices.h>
+
 typedef void (^ALAssetsLibraryAssetForURLResultBlock)(ALAsset *asset);
 typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 @interface PriviewController ()
@@ -26,12 +30,12 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
     return context;
 }
 
-@synthesize setstr,captureImageview,ImagePickerController,locationlabel,locationbutton,msgtext,address,captureImage,fetcharray;
+@synthesize setstr,captureImageview,ImagePickerController,locationlabel,locationbutton,msgtext,address,captureImage,fetcharray,videodataselected;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     _appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-
+    ///NSLog(@"videoURL == %@  ",videodataselected);
     NSLog(@"str %@",setstr);
     self.msgtext.delegate=self;
     self.msgtext.text = @"Write your thoughts...";
@@ -50,8 +54,22 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 
 -(void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:YES];
+    if(videodataselected != nil){
+        AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:videodataselected options:nil];
+        AVAssetImageGenerator *gen = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+        gen.appliesPreferredTrackTransform = YES;
+        CMTime time = CMTimeMakeWithSeconds(0.0, 600);
+        NSError *error = nil;
+        CMTime actualTime;
+        
+        CGImageRef image = [gen copyCGImageAtTime:time actualTime:&actualTime error:&error];
+        UIImage *thumb = [[UIImage alloc] initWithCGImage:image];
+        self.captureImageview.image=thumb;
+        CGImageRelease(image);
+    }else{
     if(captureImage != nil){
     self.captureImageview.image=captureImage;
+    }
     }
 }
 
@@ -105,7 +123,12 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
     NSManagedObject *newDevice = [NSEntityDescription insertNewObjectForEntityForName:@"Entity" inManagedObjectContext:context];
     [newDevice setValue:self.locationlabel.text forKey:@"location"];
     [newDevice setValue:self.msgtext.text forKey:@"comments"];
-    [newDevice setValue:imageData forKey:@"image"];
+    NSString *urlstring = videodataselected.absoluteString;
+    if(videodataselected != nil){
+        [newDevice setValue:urlstring forKey:@"videourl"];
+    }else{
+        [newDevice setValue:imageData forKey:@"image"];
+    }
     [newDevice setValue:self.title forKey:@"categaryoption"];
 
 
@@ -253,9 +276,16 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
     
 }
 -(void)selectGallery{
+    CFStringRef mTypes[2] = { kUTTypeImage, kUTTypeMovie };
+    CFArrayRef mTypesArray = CFArrayCreate(CFAllocatorGetDefault(), (const void**)mTypes, 2, &kCFTypeArrayCallBacks);
+
     self.ImagePickerController = [[UIImagePickerController alloc]init];
     self.ImagePickerController.delegate = self;
+    self.ImagePickerController.videoMaximumDuration = 120.0f;
+    self.ImagePickerController.allowsEditing = YES;
     self.ImagePickerController.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    self.ImagePickerController.mediaTypes = (__bridge NSArray*)mTypesArray;
+    CFRelease(mTypesArray);
     [self presentViewController:self.ImagePickerController animated:YES completion:nil];
     
     
@@ -275,10 +305,11 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 //}
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
     NSLog(@"finish");
-    //self.selectedimage = info[UIImagePickerControllerOriginalImage];
-    
-    //if(UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone) {
+
     [picker dismissViewControllerAnimated:YES completion:nil];
+    if([info[UIImagePickerControllerMediaType] isEqualToString:(__bridge NSString *)(kUTTypeImage)])
+    {
+
     NSURL *imageUrl  = (NSURL *)[info objectForKey:UIImagePickerControllerReferenceURL];
     NSLog(@"imageUrl %@",imageUrl);
     ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
@@ -290,7 +321,7 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
             UIImage *image = [UIImage imageWithCGImage:resolutionRef scale:1.0f orientation:(UIImageOrientation)representation.orientation];
             self.captureImage= image;
             self.captureImageview.image =image;
-            
+            videodataselected=nil;
         }
     };
     ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
@@ -302,6 +333,11 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
     {
         ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc]init];
         [assetslibrary assetForURL:imageUrl resultBlock:resultblock failureBlock:failureblock];
+    }
+    }else{
+        videodataselected = [info objectForKey:UIImagePickerControllerMediaURL];
+        NSLog(@"videoURL == %@  ",videodataselected);
+
     }
     
 }

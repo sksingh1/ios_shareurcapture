@@ -24,6 +24,7 @@
 @property(nonatomic, retain) IBOutlet UILabel *locationlabel;
 @property (nonatomic,retain) NSString *setstr;
 @property (nonatomic,retain) NSString *address;
+@property (nonatomic,retain) NSURL *videodataselected;
 @property(weak,nonatomic)AppDelegate *appDelegate;
 @property (strong) NSMutableArray *fetcharray;
 

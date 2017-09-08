@@ -10,6 +10,8 @@
 #define IS_OS_8_OR_LATER ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0)
 #import "PriviewController.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <MobileCoreServices/MobileCoreServices.h>
+
 typedef void (^ALAssetsLibraryAssetForURLResultBlock)(ALAsset *asset);
 typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 @interface ViewController ()
@@ -246,54 +248,59 @@ didChangeDragState:(MKAnnotationViewDragState)newState
     
 }
 -(IBAction)selectGallery:(id)sender{
+    CFStringRef mTypes[2] = { kUTTypeImage, kUTTypeMovie };
+    CFArrayRef mTypesArray = CFArrayCreate(CFAllocatorGetDefault(), (const void**)mTypes, 2, &kCFTypeArrayCallBacks);
     self.ImagePickerController = [[UIImagePickerController alloc]init];
     self.ImagePickerController.delegate = self;
+    self.ImagePickerController.videoMaximumDuration = 120.0f;
+    self.ImagePickerController.allowsEditing = YES;
     self.ImagePickerController.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
+    self.ImagePickerController.mediaTypes = (__bridge NSArray*)mTypesArray;
+    CFRelease(mTypesArray);
+
     [self presentViewController:self.ImagePickerController animated:YES completion:nil];
 
     
 }
 #pragma mark - ImagePickerController Delegate
 
-//- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
-//    
-//    NSLog(@"finish %@",info);
-//    self.selectedimage = info[UIImagePickerControllerOriginalImage];
-//    NSLog(@"finish");
-//
-//    //if(UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone) {
-//        [picker dismissViewControllerAnimated:YES completion:nil];
-//    
-//    //self.selectedimage = [info objectForKey:UIImagePickerControllerOriginalImage];
-//}
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
     NSLog(@"finish");
     //self.selectedimage = info[UIImagePickerControllerOriginalImage];
     
-    //if(UI_USER_INTERFACE_IDIOM()==UIUserInterfaceIdiomPhone) {
     [picker dismissViewControllerAnimated:YES completion:nil];
-    NSURL *imageUrl  = (NSURL *)[info objectForKey:UIImagePickerControllerReferenceURL];
-    NSLog(@"imageUrl %@",imageUrl);
-    ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
+    if([info[UIImagePickerControllerMediaType] isEqualToString:(__bridge NSString *)(kUTTypeImage)])
     {
-        ALAssetRepresentation *representation = [myasset defaultRepresentation];
-        CGImageRef resolutionRef = [representation fullResolutionImage];
         
-        if (resolutionRef) {
-            UIImage *image = [UIImage imageWithCGImage:resolutionRef scale:1.0f orientation:(UIImageOrientation)representation.orientation];
-            self.selectedimage.image =image;
+        NSURL *imageUrl  = (NSURL *)[info objectForKey:UIImagePickerControllerReferenceURL];
+        NSLog(@"imageUrl %@",imageUrl);
+        ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
+        {
+            ALAssetRepresentation *representation = [myasset defaultRepresentation];
+            CGImageRef resolutionRef = [representation fullResolutionImage];
             
+            if (resolutionRef) {
+                UIImage *image = [UIImage imageWithCGImage:resolutionRef scale:1.0f orientation:(UIImageOrientation)representation.orientation];
+                self.selectedimage.image =image;
+                
+            }
+        };
+        ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
+        {
+            NSLog(@"cant get image - %@",[myerror localizedDescription]);
+        };
+        
+        if(imageUrl)
+        {
+            ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc]init];
+            [assetslibrary assetForURL:imageUrl resultBlock:resultblock failureBlock:failureblock];
         }
-    };
-    ALAssetsLibraryAccessFailureBlock failureblock  = ^(NSError *myerror)
-    {
-        NSLog(@"cant get image - %@",[myerror localizedDescription]);
-    };
-    
-    if(imageUrl)
-    {
-        ALAssetsLibrary* assetslibrary = [[ALAssetsLibrary alloc]init];
-        [assetslibrary assetForURL:imageUrl resultBlock:resultblock failureBlock:failureblock];
+    }else{
+        //NSString *moviePath = [NSString stringWithFormat:@"%@", [[info objectForKey:UIImagePickerControllerMediaURL] path]];
+         videoURL = [info objectForKey:UIImagePickerControllerMediaURL];
+        NSLog(@"videoURL == %@  ",videoURL);
+         //videoData = [NSData dataWithContentsOfURL:videoURL];
+        //NSLog(@"videoURL == %@  ",videoData);
     }
 
 }
@@ -315,6 +322,9 @@ didChangeDragState:(MKAnnotationViewDragState)newState
         linkedInViewController.title=self.selectedoption;
         linkedInViewController.address=self.address;
         linkedInViewController.setstr=@"yupppiiii";
+        if(videoURL != nil){
+            linkedInViewController.videodataselected =videoURL;
+        }
         UIImage *image = self.selectedimage.image;
         linkedInViewController.captureImage  =image;
         

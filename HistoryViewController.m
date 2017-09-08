@@ -8,6 +8,9 @@
 
 #import "HistoryViewController.h"
 #import "Entity+CoreDataProperties.h"
+#import <AVFoundation/AVFoundation.h>
+#import <MediaPlayer/MediaPlayer.h>
+#import <MobileCoreServices/MobileCoreServices.h>
 
 @interface HistoryViewController ()
 
@@ -73,8 +76,21 @@
     comments.text =obj.comments;
     location.text =obj.location;
     catoption.text =obj.categaryoption;
-    
+    if(obj.videourl != nil){
+        NSURL *url=[[NSURL alloc] initWithString:obj.videourl];
+      AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:nil];
+      AVAssetImageGenerator *gen = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+      gen.appliesPreferredTrackTransform = YES;
+      CMTime time = CMTimeMakeWithSeconds(0.0, 600);
+      NSError *error = nil;
+      CMTime actualTime;
+      CGImageRef image = [gen copyCGImageAtTime:time actualTime:&actualTime error:&error];
+      UIImage *thumb = [[UIImage alloc] initWithCGImage:image];
+      imageview.image=thumb;
+      CGImageRelease(image);
+    }else{
     imageview.image =[UIImage imageWithData:obj.image];
+    }
     //}
     return cell;
 }

@@ -21,7 +21,7 @@
     IBOutlet UIButton *galleryButton;
     IBOutlet UIButton *previewButton;
     NSString *selectedoption;
-    
+    NSURL *videoURL;
 }
 @property(nonatomic, assign) id<UINavigationControllerDelegate,UIImagePickerControllerDelegate> delegate;
 @property(nonatomic, retain) UIImageView *selectedimage;
