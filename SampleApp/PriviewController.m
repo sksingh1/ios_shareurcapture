@@ -336,6 +336,7 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
     }else{
         //NSLog(@"videoURL == %@  ",[info objectForKey:UIImagePickerControllerMediaURL]);
         videodataselected = [info objectForKey:UIImagePickerControllerMediaURL];
+        self.captureImage =nil;
         //NSLog(@"videoURL == %@  ",videodataselected);
 
     }

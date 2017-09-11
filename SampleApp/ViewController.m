@@ -241,6 +241,11 @@ didChangeDragState:(MKAnnotationViewDragState)newState
         
         UIImagePickerController *cameraPicker = [[UIImagePickerController alloc] init];
         cameraPicker.sourceType = UIImagePickerControllerSourceTypeCamera;
+        CFStringRef mTypes[2] = { kUTTypeImage, kUTTypeMovie };
+        CFArrayRef mTypesArray = CFArrayCreate(CFAllocatorGetDefault(), (const void**)mTypes, 2, &kCFTypeArrayCallBacks);
+        cameraPicker.mediaTypes = (__bridge NSArray*)mTypesArray;
+        CFRelease(mTypesArray);
+
         cameraPicker.delegate = _delegate;
         // Show image picker
         [self presentViewController:cameraPicker animated:YES completion:nil];
