@@ -18,7 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSString *comments;
 @property (nullable, nonatomic, copy) NSString *location;
 @property (nullable, nonatomic, retain) NSData *image;
-@property (nullable, nonatomic, copy) NSString *videourl;
+@property (nullable, nonatomic, retain) NSData *videourl;
 
 
 @end

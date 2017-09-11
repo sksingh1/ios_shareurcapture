@@ -9,7 +9,8 @@
 #import <UIKit/UIKit.h>
 #include "AppDelegate.h"
 #import <CoreData/CoreData.h>
-
+#import <AVFoundation/AVFoundation.h>
+#import <AVKit/AVKit.h>
 @interface HistoryViewController : UIViewController <UITableViewDataSource,UITableViewDelegate>
 {
     UITableViewCell *cell;
@@ -17,5 +18,6 @@
 @property(nonatomic, retain) IBOutlet UITableView *historytable;
 @property(weak,nonatomic)AppDelegate *appDelegate;
 @property (strong) NSMutableArray *fetcharray;
+@property (nonatomic, retain) AVPlayerViewController *playerViewController;
 
 @end

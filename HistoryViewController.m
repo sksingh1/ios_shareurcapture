@@ -77,8 +77,17 @@
     location.text =obj.location;
     catoption.text =obj.categaryoption;
     if(obj.videourl != nil){
-        NSURL *url=[[NSURL alloc] initWithString:obj.videourl];
-      AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:url options:nil];
+        NSString *filename=[NSString stringWithFormat:@"%ld%@",(long)indexPath.row,@"video.mp4"];
+        NSString *filePath = [self documentsPathForFileName:filename];
+        
+        BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
+        if(!fileExists) {
+            [obj.videourl writeToFile:filePath atomically:YES];
+        }
+        
+        // access video as URL
+        NSURL *urlVideoFile =  [NSURL fileURLWithPath:filePath];
+      AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:urlVideoFile options:nil];
       AVAssetImageGenerator *gen = [[AVAssetImageGenerator alloc] initWithAsset:asset];
       gen.appliesPreferredTrackTransform = YES;
       CMTime time = CMTimeMakeWithSeconds(0.0, 600);
@@ -93,6 +102,14 @@
     }
     //}
     return cell;
+}
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    Entity *obj = [self.fetcharray objectAtIndex:indexPath.row];
+    if(obj.videourl != nil){
+        //NSLog(@"url = %@",obj.videourl);
+        NSString *filename=[NSString stringWithFormat:@"%ld%@",(long)indexPath.row,@"video.mp4"];
+        [self playvideo:obj.videourl :filename];
+    }
 }
 - (void)deleteAllObjects: (NSString *) entityDescription  {
     entityDescription =@"Entity";
@@ -134,7 +151,29 @@
         [self presentViewController:alert animated:YES completion:nil];
     }
 }
-
+-(void)playvideo:(NSData *)path:(NSString *)filename{
+    NSString *filePath = [self documentsPathForFileName:filename];
+    BOOL fileExists = [[NSFileManager defaultManager] fileExistsAtPath:filePath];
+    if(!fileExists) {
+        [path writeToFile:filePath atomically:YES];
+    }
+    // access video as URL
+    NSURL *urlVideoFile =  [NSURL fileURLWithPath:filePath];
+    _playerViewController = [[AVPlayerViewController alloc] init];
+    _playerViewController.player = [AVPlayer playerWithURL:urlVideoFile];
+    //_playerViewController.view.frame = self.view.bounds;
+    _playerViewController.showsPlaybackControls = YES;
+    [self presentViewController:_playerViewController animated:YES completion:nil];
+    _playerViewController.view.frame = self.view.frame;
+    [_playerViewController.player play];
+}
+- (NSString *)documentsPathForFileName:(NSString *)name
+{
+    NSArray *paths =     NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
+    NSString *documentsPath = [paths objectAtIndex:0];
+    
+    return [documentsPath stringByAppendingPathComponent:name];
+}
 /*
 #pragma mark - Navigation
 

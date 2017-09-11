@@ -10,6 +10,7 @@
 #include "AppDelegate.h"
 #import <CoreData/CoreData.h>
 
+
 @interface PriviewController : UIViewController<UITextViewDelegate,UIImagePickerControllerDelegate,UINavigationControllerDelegate>{
     NSString *str;
     UIImage *captureImage;

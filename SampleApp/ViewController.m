@@ -265,7 +265,7 @@ didChangeDragState:(MKAnnotationViewDragState)newState
 #pragma mark - ImagePickerController Delegate
 
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
-    NSLog(@"finish");
+    //NSLog(@"finish");
     //self.selectedimage = info[UIImagePickerControllerOriginalImage];
     
     [picker dismissViewControllerAnimated:YES completion:nil];
@@ -273,7 +273,7 @@ didChangeDragState:(MKAnnotationViewDragState)newState
     {
         
         NSURL *imageUrl  = (NSURL *)[info objectForKey:UIImagePickerControllerReferenceURL];
-        NSLog(@"imageUrl %@",imageUrl);
+        //NSLog(@"imageUrl %@",imageUrl);
         ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
         {
             ALAssetRepresentation *representation = [myasset defaultRepresentation];
@@ -296,11 +296,8 @@ didChangeDragState:(MKAnnotationViewDragState)newState
             [assetslibrary assetForURL:imageUrl resultBlock:resultblock failureBlock:failureblock];
         }
     }else{
-        //NSString *moviePath = [NSString stringWithFormat:@"%@", [[info objectForKey:UIImagePickerControllerMediaURL] path]];
          videoURL = [info objectForKey:UIImagePickerControllerMediaURL];
-        NSLog(@"videoURL == %@  ",videoURL);
-         //videoData = [NSData dataWithContentsOfURL:videoURL];
-        //NSLog(@"videoURL == %@  ",videoData);
+        //NSLog(@"videoURL == %@  ",videoURL);
     }
 
 }
@@ -313,7 +310,7 @@ didChangeDragState:(MKAnnotationViewDragState)newState
 }
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     //[segue destinationViewController];
-    NSLog(@"First controller");
+    //NSLog(@"First controller");
     if ([segue.identifier isEqualToString:@"priviewSegue"]){
         //I use this if statement to check which segue I am performing, if I have multiple
         //segues from a single view controller

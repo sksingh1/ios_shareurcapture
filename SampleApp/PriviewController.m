@@ -35,8 +35,6 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 - (void)viewDidLoad {
     [super viewDidLoad];
     _appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-    ///NSLog(@"videoURL == %@  ",videodataselected);
-    NSLog(@"str %@",setstr);
     self.msgtext.delegate=self;
     self.msgtext.text = @"Write your thoughts...";
     self.msgtext.textColor = [UIColor lightGrayColor]; //optional
@@ -55,6 +53,7 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 -(void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:YES];
     if(videodataselected != nil){
+        
         AVURLAsset *asset = [[AVURLAsset alloc] initWithURL:videodataselected options:nil];
         AVAssetImageGenerator *gen = [[AVAssetImageGenerator alloc] initWithAsset:asset];
         gen.appliesPreferredTrackTransform = YES;
@@ -77,7 +76,7 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 
  //In a storyboard-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    NSLog(@"second controller");
+    //NSLog(@"second controller");
      //Get the new view controller using [segue destinationViewController].
      //Pass the selected object to the new view controller.
 }
@@ -123,9 +122,9 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
     NSManagedObject *newDevice = [NSEntityDescription insertNewObjectForEntityForName:@"Entity" inManagedObjectContext:context];
     [newDevice setValue:self.locationlabel.text forKey:@"location"];
     [newDevice setValue:self.msgtext.text forKey:@"comments"];
-    NSString *urlstring = videodataselected.absoluteString;
+    NSData *videoData = [NSData dataWithContentsOfURL:videodataselected];
     if(videodataselected != nil){
-        [newDevice setValue:urlstring forKey:@"videourl"];
+        [newDevice setValue:videoData forKey:@"videourl"];
     }else{
         [newDevice setValue:imageData forKey:@"image"];
     }
@@ -282,7 +281,7 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
     self.ImagePickerController = [[UIImagePickerController alloc]init];
     self.ImagePickerController.delegate = self;
     self.ImagePickerController.videoMaximumDuration = 120.0f;
-    self.ImagePickerController.allowsEditing = YES;
+    //self.ImagePickerController.allowsEditing = YES;
     self.ImagePickerController.sourceType = UIImagePickerControllerSourceTypeSavedPhotosAlbum;
     self.ImagePickerController.mediaTypes = (__bridge NSArray*)mTypesArray;
     CFRelease(mTypesArray);
@@ -304,14 +303,14 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
 //    //self.selectedimage = [info objectForKey:UIImagePickerControllerOriginalImage];
 //}
 -(void) imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
-    NSLog(@"finish");
+    //NSLog(@"finish");
 
     [picker dismissViewControllerAnimated:YES completion:nil];
     if([info[UIImagePickerControllerMediaType] isEqualToString:(__bridge NSString *)(kUTTypeImage)])
     {
 
     NSURL *imageUrl  = (NSURL *)[info objectForKey:UIImagePickerControllerReferenceURL];
-    NSLog(@"imageUrl %@",imageUrl);
+    //NSLog(@"imageUrl %@",imageUrl);
     ALAssetsLibraryAssetForURLResultBlock resultblock = ^(ALAsset *myasset)
     {
         ALAssetRepresentation *representation = [myasset defaultRepresentation];
@@ -335,8 +334,9 @@ typedef void (^ALAssetsLibraryAccessFailureBlock)(NSError *error);
         [assetslibrary assetForURL:imageUrl resultBlock:resultblock failureBlock:failureblock];
     }
     }else{
+        //NSLog(@"videoURL == %@  ",[info objectForKey:UIImagePickerControllerMediaURL]);
         videodataselected = [info objectForKey:UIImagePickerControllerMediaURL];
-        NSLog(@"videoURL == %@  ",videodataselected);
+        //NSLog(@"videoURL == %@  ",videodataselected);
 
     }
     
