@@ -106,10 +106,48 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     Entity *obj = [self.fetcharray objectAtIndex:indexPath.row];
     if(obj.videourl != nil){
-        //NSLog(@"url = %@",obj.videourl);
         NSString *filename=[NSString stringWithFormat:@"%ld%@",(long)indexPath.row,@"video.mp4"];
         [self playvideo:obj.videourl :filename];
+    }else if(obj.image != nil){
+        CGRect screenRect = [[UIScreen mainScreen] bounds];
+        coverView = [[UIView alloc] initWithFrame:screenRect];
+        coverView.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.6];
+        
+        UIImageView *single_view = [[UIImageView alloc]initWithFrame:CGRectMake(12, 75, self.view.frame.size.width - 25 , self.view.frame.size.height - 92)];
+        single_view.image=[UIImage imageWithData:obj.image];;
+        [single_view setMultipleTouchEnabled:YES];
+        [single_view setUserInteractionEnabled:YES];
+        
+        UITapGestureRecognizer *singleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(singleTapGestureCaptured:)];
+
+        UILabel *testLabel = [[UILabel alloc] initWithFrame:CGRectMake(352, 68, 20, 20)];
+        testLabel.font =[UIFont boldSystemFontOfSize:16.0f];
+        testLabel.textColor =[UIColor redColor];
+        testLabel.text= @" X";
+        [testLabel addGestureRecognizer:singleTap];
+        [testLabel setMultipleTouchEnabled:YES];
+        [testLabel setUserInteractionEnabled:YES];
+        
+        CAShapeLayer *circleLayer = [CAShapeLayer layer];
+        circleLayer.path = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, 20, 20)].CGPath;
+        circleLayer.fillColor = [UIColor clearColor].CGColor;
+        circleLayer.strokeColor = [UIColor redColor].CGColor;
+        circleLayer.lineWidth = 2;
+        
+        // Add it do your label's layer hierarchy
+        
+        [testLabel.layer addSublayer:circleLayer];
+        
+        [coverView addSubview:single_view];
+        [coverView addSubview:testLabel];
+        [self.view addSubview:coverView];
     }
+}
+- (void)singleTapGestureCaptured:(UITapGestureRecognizer *)gesture
+{
+    UIView *tappedView = [gesture.view hitTest:[gesture locationInView:gesture.view] withEvent:nil];
+    NSLog(@"Touch event on view: %@",[tappedView class]);
+    [coverView removeFromSuperview];
 }
 - (void)deleteAllObjects: (NSString *) entityDescription  {
     entityDescription =@"Entity";

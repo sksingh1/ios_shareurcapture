@@ -14,6 +14,7 @@
 @interface HistoryViewController : UIViewController <UITableViewDataSource,UITableViewDelegate>
 {
     UITableViewCell *cell;
+    UIView* coverView;
 }
 @property(nonatomic, retain) IBOutlet UITableView *historytable;
 @property(weak,nonatomic)AppDelegate *appDelegate;
